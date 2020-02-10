@@ -6,14 +6,34 @@
     <title>Triangles</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/2.2.0/anime.min.js"></script>
     <style>
-        html, body {
-            padding: 0;
-            margin: 0;
-        }
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+        background: black;
+      }
+
+      .tri1 {
+        position: fixed;
+        top: 0;
+        bottom: 50%;
+        left: 0;
+        right: 50%;
+      }
+
+      .tri2 {
+        position: fixed;
+        top: 50%;
+        bottom: 0;
+        left: 50%;
+        right: 0;
+      }
     </style>
   </head>
   <body>
-    <canvas class="triangles"></div>
+    <div class="triangles tri1"></div>
+    <div class="triangles tri2"></div>
+    <div style="height: 300vh"></div>
     <script src="./triangles.js"></script>
   </body>
 </html>
