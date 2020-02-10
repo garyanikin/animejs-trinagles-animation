@@ -1,15 +1,5 @@
-// window.human = false;
-
 var canvasEl = document.querySelector(".triangles");
 var ctx = canvasEl.getContext("2d");
-// var numberOfParticules = 30;
-// var pointerX = 0;
-// var pointerY = 0;
-// var tap =
-//   "ontouchstart" in window || navigator.msMaxTouchPoints
-//     ? "touchstart"
-//     : "mousedown";
-// var colors = ["#FF1461", "#18FF92", "#5A87FF", "#FBF38C"];
 
 function setCanvasSize() {
   canvasEl.width = window.innerWidth * 2;
@@ -19,183 +9,113 @@ function setCanvasSize() {
   ctx.scale(2, 2);
 }
 
-// function updateCoords(e) {
-//   pointerX = e.clientX || e.touches[0].clientX;
-//   pointerY = e.clientY || e.touches[0].clientY;
-// }
+const triangle_height = 50;
+const triangle_base = 40;
+const square_size = 5;
+function createSquare(x, y) {
+  var p = {};
+  p.x = x;
+  p.y = y;
+  p.color = "#000";
+  p.alpha = 0;
+  p.draw = function() {
+    ctx.globalAlpha = p.alpha;
+    ctx.fillRect(p.x, p.y, square_size, square_size);
+    ctx.globalAlpha = 1;
+  };
+  return p;
+}
 
-// function setParticuleDirection(p) {
-//   var angle = (anime.random(0, 360) * Math.PI) / 180;
-//   var value = anime.random(50, 180);
-//   var radius = [-1, 1][anime.random(0, 1)] * value;
-//   return {
-//     x: p.x + radius * Math.cos(angle),
-//     y: p.y + radius * Math.sin(angle)
-//   };
-// }
+function animateTriangle(x, y) {
+  const left_square = createSquare(
+    x * triangle_base - square_size / 2,
+    y * triangle_height * 2 - square_size / 2
+  );
+  const center_square = createSquare(
+    x * triangle_base + triangle_base / 2 - square_size / 2,
+    y * triangle_height * 2 + triangle_height - square_size / 2
+  );
+  const right_square = createSquare(
+    x * triangle_base + triangle_base - square_size / 2,
+    y * triangle_height * 2 - square_size / 2
+  );
 
-// function createParticule(x, y) {
-//   var p = {};
-//   p.x = x;
-//   p.y = y;
-//   p.color = colors[anime.random(0, colors.length - 1)];
-//   p.radius = anime.random(16, 32);
-//   p.endPos = setParticuleDirection(p);
-//   p.draw = function() {
-//     ctx.beginPath();
-//     ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-//     ctx.fillStyle = p.color;
-//     ctx.fill();
-//   };
-//   return p;
-// }
+  const duration = anime.random(1000, 3000);
+  const animeLeftSquare = anime
+    .timeline({
+      targets: [left_square, center_square, right_square],
+      easing: "linear",
+      update: anim => anim.animatables.map(({ target }) => target.draw())
+    })
+    .add({
+      alpha: 1,
+      duration
+    })
+    .add({
+      alpha: 1,
+      duration: 1000
+    })
+    .add({
+      alpha: 0,
+      duration
+    });
+}
 
-// function createCircle(x, y) {
-//   var p = {};
-//   p.x = x;
-//   p.y = y;
-//   p.color = "#FFF";
-//   p.radius = 0.1;
-//   p.alpha = 0.5;
-//   p.lineWidth = 6;
-//   p.draw = function() {
-//     ctx.globalAlpha = p.alpha;
-//     ctx.beginPath();
-//     ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI, true);
-//     ctx.lineWidth = p.lineWidth;
-//     ctx.strokeStyle = p.color;
-//     ctx.stroke();
-//     ctx.globalAlpha = 1;
-//   };
-//   return p;
-// }
-
-// function renderParticule(anim) {
-//   for (var i = 0; i < anim.animatables.length; i++) {
-//     anim.animatables[i].target.draw();
-//   }
-// }
-
-// function animateParticules(x, y) {
-//   var circle = createCircle(x, y);
-//   var particules = [];
-//   for (var i = 0; i < numberOfParticules; i++) {
-//     particules.push(createParticule(x, y));
-//   }
-//   anime
-//     .timeline()
-//     .add({
-//       targets: particules,
-//       x: function(p) {
-//         return p.endPos.x;
-//       },
-//       y: function(p) {
-//         return p.endPos.y;
-//       },
-//       radius: 0.1,
-//       duration: anime.random(1200, 1800),
-//       easing: "easeOutExpo",
-//       update: renderParticule
-//     })
-//     .add({
-//       targets: circle,
-//       radius: anime.random(80, 160),
-//       lineWidth: 0,
-//       alpha: {
-//         value: 0,
-//         easing: "linear",
-//         duration: anime.random(600, 800)
-//       },
-//       duration: anime.random(1200, 1800),
-//       easing: "easeOutExpo",
-//       update: renderParticule,
-//       offset: 0
-//     });
-// }
-
-// var render = anime({
-//   duration: Infinity,
-//   update: function() {
-//     ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-//   }
-// });
-
-// document.addEventListener(
-//   tap,
-//   function(e) {
-//     window.human = true;
-//     render.play();
-//     updateCoords(e);
-//     animateParticules(pointerX, pointerY);
-//   },
-//   false
-// );
-
-// var centerX = window.innerWidth / 2;
-// var centerY = window.innerHeight / 2;
-
-// function autoClick() {
-//   if (window.human) return;
-//   animateParticules(
-//     anime.random(centerX - 50, centerX + 50),
-//     anime.random(centerY - 50, centerY + 50)
-//   );
-//   anime({ duration: 200 }).finished.then(autoClick);
-// }
-
-// autoClick();
+var render = anime({
+  duration: Infinity,
+  update: function() {
+    ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
+    drawBackground();
+  }
+});
 
 setCanvasSize();
-drawTriangles();
 
 // add throttle only trailling, leading: false
 window.addEventListener(
   "resize",
   () => {
     setCanvasSize();
-    drawTriangles();
   },
   false
 );
 
-function drawTriangles() {
-  startMeasure();
-  ctx.beginPath();
-  const triangle_height = 50;
-  const triangle_base = 40;
+// Every second with 30% chance start animation
+setInterval(() => {
+  const maxX = Math.floor(canvasEl.width / triangle_base / 2);
+  const maxY = Math.floor(canvasEl.height / (triangle_height * 2) / 2);
+  const rnd = Math.random();
+  const chance = 0.3;
+  if (rnd < chance) {
+    // Select random triangle
 
-  drawHorizontalLine(triangle_height);
-  drawLeftLine(triangle_base, triangle_height);
-  drawRightLine(triangle_base, triangle_height);
-  ctx.stroke();
+    const x = Math.floor(Math.random() * maxX);
+    const y = Math.floor(Math.random() * maxY);
 
-  const yCount = canvasEl.height / triangle_height / 2;
-  const xCount = canvasEl.width / triangle_base;
-  for (let y = 0; y < yCount; y++) {
-    for (let x = 0; x < xCount; x++) {
-      drawSquares({
-        triangle_base,
-        triangle_height,
-        x: x * triangle_base,
-        y: y * triangle_height * 2
-      });
+    // Animate triangle
+    animateTriangle(x, y);
+
+    // Select random amount (1-3) of closest triangles
+    const closestTriangles = Math.floor(Math.random() * 5) + 1;
+    for (let i = 0; i < closestTriangles; i++) {
+      // Animate them
+      const deltaX = Math.random() > 0.5 ? 0.5 : -0.5;
+      const deltaY = Math.random() > 0.5 ? 0.5 : -0.5;
+      animateTriangle(x + deltaX, y + deltaY);
     }
   }
-  stopMeasure();
+}, 1000);
+
+function drawBackground() {
+  ctx.beginPath();
+  drawHorizontalLine();
+  drawLeftLine();
+  drawRightLine();
+  ctx.stroke();
 }
 
-console.log(1000 / 60, "ms for one frame");
-function startMeasure() {
-  performance.mark("startMeasure");
-}
-
-function drawHorizontalLine(triangle_height) {
-  // canvasEl.width = window.innerWidth * 2;
-  // canvasEl.height = window.innerHeight * 2;
-  // ctx.scale(2, 2);
-
+function drawHorizontalLine() {
   const line_count = canvasEl.height / triangle_height;
-  console.log("drawHorizontalLine line_count", line_count);
 
   for (let i = 1; i <= line_count; i++) {
     drawLine(i * triangle_height);
@@ -206,9 +126,8 @@ function drawHorizontalLine(triangle_height) {
     ctx.lineTo(canvasEl.width, y);
   }
 }
-function drawRightLine(triangle_base, triangle_height) {
+function drawRightLine() {
   const line_count = canvasEl.width / triangle_base;
-  console.log("drawRightLine line_count", line_count);
 
   let starting_point =
     (triangle_base / 2) * (canvasEl.height / triangle_height); // get width of end first line
@@ -225,9 +144,8 @@ function drawRightLine(triangle_base, triangle_height) {
     );
   }
 }
-function drawLeftLine(triangle_base, triangle_height) {
+function drawLeftLine() {
   const line_count = canvasEl.width / triangle_base;
-  console.log("drawLeftLine line_count", line_count);
   let starting_point =
     (triangle_base / 2) * (canvasEl.height / triangle_height); // get width of end first line
   starting_point = Math.floor(starting_point / triangle_base);
@@ -241,42 +159,4 @@ function drawLeftLine(triangle_base, triangle_height) {
       canvasEl.height
     );
   }
-}
-
-function drawSquares({ triangle_base, triangle_height, y, x }) {
-  const square_size = 6;
-
-  //left
-  ctx.fillRect(
-    x - square_size / 2,
-    y - square_size / 2,
-    square_size,
-    square_size
-  );
-
-  // center
-  ctx.fillRect(
-    x + triangle_base / 2 - square_size / 2,
-    y + triangle_height - square_size / 2,
-    square_size,
-    square_size
-  );
-
-  // right
-  ctx.fillRect(
-    x + triangle_base - square_size / 2,
-    y - square_size / 2,
-    square_size,
-    square_size
-  );
-}
-
-function stopMeasure() {
-  performance.mark("stopMeasure");
-  performance.measure("Draw triangles", "startMeasure", "stopMeasure");
-  console.log(performance.getEntriesByType("measure"));
-
-  // Finally, clean up the entries.
-  performance.clearMarks();
-  performance.clearMeasures();
 }
