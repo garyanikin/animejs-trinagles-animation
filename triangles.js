@@ -92,7 +92,7 @@
       const maxX = Math.floor(canvas.width / triangle_base / 2);
       const maxY = Math.floor(canvas.height / (triangle_height * 2) / 2);
       const rnd = Math.random();
-      const chance = 0.6;
+      const chance = 0.9;
       if (rnd < chance) {
         // Select random triangle
 
@@ -116,7 +116,7 @@
         }
         animateTriangle([...base_triangle], [...closest_triangles]);
       }
-    }, 2500);
+    }, 1500);
   }
 
   function createSquare(ctx, x, y) {
