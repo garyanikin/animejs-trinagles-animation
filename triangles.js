@@ -22,22 +22,15 @@
     startAnimation(canv);
   });
 
-  window.addEventListener(
-    "resize",
-    () => {
-      throttle(updateCanvasSize, 300);
-    },
-    false
-  );
+  window.addEventListener("resize", debounce(updateCanvasSize, 200), false);
 
-  function throttle(func, timeFrame) {
-    var lastTime = 0;
+  function debounce(func, delay) {
+    let inDebounce;
     return function() {
-      var now = new Date();
-      if (now - lastTime >= timeFrame) {
-        func();
-        lastTime = now;
-      }
+      const context = this;
+      const args = arguments;
+      clearTimeout(inDebounce);
+      inDebounce = setTimeout(() => func.apply(context, args), delay);
     };
   }
 
@@ -53,6 +46,7 @@
   }
 
   function updateCanvasSize() {
+    console.log("update");
     // Resize all canvases
     [...document.querySelectorAll(TRIANGLE_SELECTOR)].map(elem => {
       if (elem.childNodes) {
@@ -93,12 +87,12 @@
       }
     });
 
-    // Every 2 seconds with 75% chance start animation
+    // Every some seconds with some chance start animation
     setInterval(() => {
       const maxX = Math.floor(canvas.width / triangle_base / 2);
       const maxY = Math.floor(canvas.height / (triangle_height * 2) / 2);
       const rnd = Math.random();
-      const chance = 0.75;
+      const chance = 0.6;
       if (rnd < chance) {
         // Select random triangle
 
@@ -109,7 +103,7 @@
         const base_triangle = createTriangle(ctx, x, y);
 
         // Select random amount (1-6) of closest triangles
-        const closestTriangles = Math.floor(Math.random() * 6) + 1;
+        const closestTriangles = Math.floor(Math.random() * 5) + 1;
         let closest_triangles = [];
         for (let i = 0; i < closestTriangles; i++) {
           // Animate them
@@ -120,9 +114,9 @@
             ...createTriangle(ctx, x + deltaX, y + deltaY)
           ];
         }
-        animateTriangle([...base_triangle, ...closest_triangles]);
+        animateTriangle([...base_triangle], [...closest_triangles]);
       }
-    }, 2000);
+    }, 2500);
   }
 
   function createSquare(ctx, x, y) {
@@ -158,26 +152,45 @@
     return [left_square, center_square, right_square];
   }
 
-  function animateTriangle(triangle) {
+  function animateTriangle(base, closest) {
+    const easing = "easeInOutQuad";
     const duration = anime.random(300, 600);
-    const animeLeftSquare = anime
+    const closest_duration = anime.random(300, 600);
+    const update = anim => {
+      anim.animatables.map(({ target }) => target.draw());
+    };
+
+    anime
       .timeline({
-        targets: triangle,
-        easing: "easeInOutQuad",
-        update: anim => {
-          anim.animatables.map(({ target }) => target.draw());
-        }
+        easing
       })
       .add({
+        targets: base,
+        update,
         alpha: 1,
         duration
       })
+      .add(
+        {
+          targets: closest,
+          update,
+          alpha: 1,
+          duration: closest_duration
+        },
+        "+=" + closest_duration / 2
+      )
       .add({
         alpha: 1,
+        easing: "linear",
+        targets: [...base, ...closest],
+        update,
         duration: hold_duration
       })
       .add({
         alpha: 0,
+        easing,
+        targets: [...base, ...closest],
+        update,
         duration
       });
   }
