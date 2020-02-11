@@ -4,11 +4,17 @@
   const square_color = "#FFF";
   const lines_color = "#FFF";
   const lines_opacity = 0.2;
-  const triangle_height = 50;
-  const triangle_base = 50;
-  const square_size = 5;
+  let triangle_height = 50;
+  let triangle_base = 50;
+  let square_size = 5;
   const hold_duration = 1500;
   const CANVASES = [];
+
+  window.setTriangleSize = (height, base, square) => {
+    triangle_height = height;
+    triangle_base = base;
+    square_size = square;
+  };
 
   mountCanvas();
 
@@ -16,14 +22,24 @@
     startAnimation(canv);
   });
 
-  // add throttle only trailling, leading: false
   window.addEventListener(
     "resize",
     () => {
-      setCanvasSize();
+      throttle(updateCanvasSize, 300);
     },
     false
   );
+
+  function throttle(func, timeFrame) {
+    var lastTime = 0;
+    return function() {
+      var now = new Date();
+      if (now - lastTime >= timeFrame) {
+        func();
+        lastTime = now;
+      }
+    };
+  }
 
   function mountCanvas() {
     [...document.querySelectorAll(TRIANGLE_SELECTOR)].map(elem => {
@@ -31,25 +47,40 @@
       const height = elem.offsetHeight;
       const canvas = document.createElement("canvas");
       elem.appendChild(canvas);
-      canvas.width = width * 2;
-      canvas.height = height * 2;
-      canvas.style.width = width + "px";
-      canvas.style.height = height + "px";
-
-      const ctx = canvas.getContext("2d");
-      ctx.scale(2, 2);
-
+      setCanvasSize(canvas, width, height);
       CANVASES.push(canvas);
     });
   }
 
-  function setCanvasSize() {
+  function updateCanvasSize() {
     // Resize all canvases
-    // canvasEl.width = window.innerWidth * 2;
-    // canvasEl.height = window.innerHeight * 2;
-    // canvasEl.style.width = window.innerWidth + "px";
-    // canvasEl.style.height = window.innerHeight + "px";
-    // ctx.scale(2, 2);
+    [...document.querySelectorAll(TRIANGLE_SELECTOR)].map(elem => {
+      if (elem.childNodes) {
+        const width = elem.offsetWidth;
+        const height = elem.offsetHeight;
+        const canvas = elem.childNodes[0];
+
+        if (canvas.tagName && canvas.tagName.toLowerCase() === "canvas") {
+          setCanvasSize(canvas, width, height);
+        }
+      }
+    });
+  }
+
+  function setCanvasSize(canvas, width, height) {
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+
+    const ctx = canvas.getContext("2d");
+    ctx.scale(2, 2);
+  }
+
+  function resetCanvas(canvas) {
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground(canvas);
   }
 
   function startAnimation(canvas) {
@@ -58,8 +89,7 @@
     var render = anime({
       duration: Infinity,
       update: function() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawBackground(canvas);
+        resetCanvas(canvas);
       }
     });
 
@@ -78,8 +108,8 @@
         // Animate triangle
         const base_triangle = createTriangle(ctx, x, y);
 
-        // Select random amount (1-3) of closest triangles
-        const closestTriangles = Math.floor(Math.random() * 5) + 1;
+        // Select random amount (1-6) of closest triangles
+        const closestTriangles = Math.floor(Math.random() * 6) + 1;
         let closest_triangles = [];
         for (let i = 0; i < closestTriangles; i++) {
           // Animate them
